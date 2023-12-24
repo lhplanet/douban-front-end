@@ -36,7 +36,15 @@
               </p>
               <p>
                 <span class="sub-title">职业：</span>
-                <span>{{ personData.occupation }}</span>
+                <span
+                  v-for="(occupation, index) in personData.occupation"
+                  :key="index"
+                >
+                  {{ occupation }}
+                  <span v-if="index !== personData.occupation.length - 1">
+                    /
+                  </span>
+                </span>
               </p>
               <p>
                 <span class="sub-title">IMDb编号：</span>
@@ -49,7 +57,7 @@
         </div>
 
         <!-- 影人简介 -->
-        <div class="person-introduction">
+        <div v-if="personData.introduction !== ''" class="person-introduction">
           <el-divider content-position="left">
             <p class="part-name">影人简介</p>
           </el-divider>
@@ -61,26 +69,18 @@
         </div>
 
         <!-- 影人图片 -->
-        <div class="related-image">
+        <div class="related-video-image">
           <el-divider content-position="left">
             <p class="part-name">影人图片</p>
           </el-divider>
-          <div class="image">
+          <div class="video-image">
             <img
-              src="https://img2.doubanio.com/view/celebrity/raw/public/p34642.jpg"
-              alt="Person Poster"
-            />
-            <img
-              src="https://img2.doubanio.com/view/celebrity/raw/public/p34642.jpg"
-              alt="Person Poster"
-            />
-            <img
-              src="https://img2.doubanio.com/view/celebrity/raw/public/p34642.jpg"
-              alt="Person Poster"
-            />
-            <img
-              src="https://img2.doubanio.com/view/celebrity/raw/public/p34642.jpg"
-              alt="Person Poster"
+              v-for="(image, index) in personData.images"
+              :key="index"
+              :src="image"
+              alt="Movie Pictures"
+              class="video-image-item"
+              style="width: 210px; height: 250px;"
             />
           </div>
         </div>
@@ -91,8 +91,16 @@
             <p class="part-name">获奖情况</p>
           </el-divider>
           <div class="awards-list">
-            <p v-for="(award, index) in awardsData" :key="index">
-              {{ award.name }}
+            <p v-for="(award, index) in personData.awards" :key="index">
+              <!-- {{ award[0] }} -->
+              <span class="awards-name">{{ award.year }}</span>
+              <br />
+              <span v-for="(awardItem, index) in award.awardList" :key="index">
+                <!-- <span class="sub-awards-name">{{ index }}</span> -->
+                <!-- <span v-if="awardItem !== ''" class="sub-awards-name">：</span> -->
+                <span v-if="awardItem !== ''">{{ awardItem }}</span>
+                <span v-if="index !== award.length - 1"><br /></span>
+              </span>
             </p>
           </div>
         </div>
@@ -102,36 +110,50 @@
           <el-divider content-position="left">
             <p class="part-name">最近的5部作品</p>
           </el-divider>
-          <!-- <div class="awards-list">
-            <p v-for="(award, index) in awardsData" :key="index">
-              {{ award.name }}
-            </p>
-          </div> -->
+          <div class="last-list">
+            <div v-for="(movie, index) in recentMovieData" :key="index" class="last-list-box">
+              <img
+                :key="index"
+                :src="movie.poster"
+                alt="Movie Poster"
+                class="last-list-item-poster"
+              />
+              <p class="last-list-item-name">{{ movie.name }}</p>
+              <!-- {{ award.name }} -->
+            </div>
+          </div>
         </div>
 
         <!-- 最受好评的5部作品 -->
-        <div class="best-five-works">
+        <div class="last-five-works">
           <el-divider content-position="left">
-            <p class="part-name">最受好评的5部作品</p>
+            <p class="part-name">最受好评的作品</p>
           </el-divider>
-          <!-- <div class="awards-list">
-            <p v-for="(award, index) in awardsData" :key="index">
-              {{ award.name }}
-            </p>
-          </div> -->
+          <div class="last-list">
+            <div v-for="(movie, index) in bestMovieData" :key="index" class="last-list-box">
+              <img
+                :key="index"
+                :src="movie.poster"
+                alt="Movie Poster"
+                class="last-list-item-poster"
+              />
+              <p class="last-list-item-name">{{ movie.name }}</p>
+              <!-- {{ award.name }} -->
+            </div>
+          </div>
         </div>
 
-        <!-- 合作2次以上的影人 -->
+        <!-- 合作2次以上的影人 
         <div class="collaborate-more-than-twice">
           <el-divider content-position="left">
             <p class="part-name">合作2次以上的影人</p>
           </el-divider>
-          <!-- <div class="awards-list">
+          <div class="awards-list">
             <p v-for="(award, index) in awardsData" :key="index">
               {{ award.name }}
             </p>
-          </div> -->
-        </div>
+          </div> 
+        </div>-->
       </div>
     </div>
   </div>
@@ -151,6 +173,10 @@ const $route = useRoute();
 const personId = $route.params.id;
 
 const personData = ref([]);
+
+const recentMovieData = ref([]);
+
+const bestMovieData = ref([]);
 
 // 将imdb编号的地址https://www.imdb.com/name/nm0000151/中的nm0000151提取出来，并一起封装到对象中
 let imdbUrl: string = "";
@@ -177,28 +203,53 @@ const getPersonById = (id: number) => {
     });
 };
 
+const getRecentMovieByPersonId = (id: string) => {
+  personAPI
+    .getRecentMovieByPersonId(id)
+    .then((response) => {
+      console.log("获取最近电影数据成功", response);
+      recentMovieData.value = response.data;
+      // imdbUrl = personData.value.imdb;
+      // imdb.imdbName = imdbUrl.substring(imdbUrl.length - 9, imdbUrl.length);
+      // imdb.imdbUrl = imdbUrl;
+      console.log(recentMovieData.value);
+    })
+    .catch((error) => {
+      console.error("获取最近电影数据失败", error);
+      ElMessage.error("获取最近电影数据失败，请重试！");
+    });
+};
+
+const getBestMovieByPersonId = (id: string) => {
+  personAPI
+    .getBestMovieByPersonId(id)
+    .then((response) => {
+      console.log("获取最近电影数据成功", response);
+      bestMovieData.value = response.data;
+      // imdbUrl = personData.value.imdb;
+      // imdb.imdbName = imdbUrl.substring(imdbUrl.length - 9, imdbUrl.length);
+      // imdb.imdbUrl = imdbUrl;
+      console.log(bestMovieData.value);
+    })
+    .catch((error) => {
+      console.error("获取最近电影数据失败", error);
+      ElMessage.error("获取最近电影数据失败，请重试！");
+    });
+};
+
+
 onMounted(() => {
   if (Array.isArray(personId)) {
     getPersonById(parseInt(personId[0]));
+    getRecentMovieByPersonId(personId[0]);
+    getBestMovieByPersonId(personId[0]);
   } else {
     getPersonById(parseInt(personId));
+    getRecentMovieByPersonId(personId);
+    getBestMovieByPersonId(personId);
   }
 });
 
-const awardsData = reactive([
-  {
-    name: "获奖1",
-  },
-  {
-    name: "获奖2",
-  },
-  {
-    name: "获奖3",
-  },
-  {
-    name: "获奖4",
-  },
-]);
 </script>
 
 <style scoped lang="scss">
@@ -272,7 +323,7 @@ const awardsData = reactive([
         }
       }
 
-      .related-image {
+      /*.related-image {
         height: 35vh;
         .image {
           padding: 10px 45px;
@@ -283,13 +334,73 @@ const awardsData = reactive([
             margin-right: 20px;
           }
         }
-      }
+      }*/
       .awards {
         .awards-list {
           padding: 10px 45px;
+
           p {
             margin-bottom: 18px;
             line-height: 1.5;
+            .awards-name {
+              font-weight: bold;
+              color: $base-color-red-light;
+            }
+            .sub-awards-name {
+              font-weight: bold;
+              color: $base-color-grey;
+            }
+          }
+        }
+      }
+      .related-video-image {
+        .video-image {
+          padding: 10px 45px;
+          height: calc(100% - 65px);
+          display: flex;
+          // 允许内容换行
+          flex-wrap: wrap;
+          // 左对齐
+          justify-content: flex-start;
+
+          img {
+            height: 100%;
+            margin-right: 20px;
+            margin-bottom: 20px;
+          }
+        }
+      }
+      .last-five-works {
+        .last-list {
+          padding: 10px 45px;
+          display: flex;
+          // 允许内容换行
+          flex-wrap: wrap;
+          // 左对齐
+          justify-content: flex-start;
+
+          // border: 1px solid red;
+
+
+          .last-list-box {
+            margin-right: 20px;
+            margin-bottom: 20px;
+            height: 30vh;
+            // overflow: hidden;
+            // border: 1px solid red;
+            width: 9vw;
+            .last-list-item-poster {
+              height: 90%;
+              // border: 1px solid red;
+            }
+            .last-list-item-name {
+              font-size: 16px;
+              font-weight: bold;
+              text-align: center;
+              margin-top: 10px;
+              // overflow: hidden;
+              // border: 1px solid red;
+            }
           }
         }
       }

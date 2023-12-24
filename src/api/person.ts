@@ -18,6 +18,24 @@ const personAPI = {
       },
     });
   },
+
+  // 通过人物id获取最近电影
+  getRecentMovieByPersonId: (id: string) => {
+    return request.get("/movie/getRecentMovieByPersonId", {
+      params: {
+        id,
+      },
+    });
+  },
+
+  // 通过人物id获取评分最高电影
+  getBestMovieByPersonId: (id: string) => {
+    return request.get("/movie/getBestMovieByPersonId", {
+      params: {
+        id,
+      },
+    });
+  },
 };
 
 export default personAPI;
