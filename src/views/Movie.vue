@@ -216,6 +216,18 @@
           <el-divider content-position="left">
             <p class="part-name">评论</p>
           </el-divider>
+          <div class="comment-list">
+            <p v-for="(comment, index) in movieData.comments" :key="index">
+              <!-- {{ index }} -->
+              <span class="commenter-info">{{ comment.commenter_info }}</span>
+              <br />
+              <span class="time-info">{{ comment.time_info }}</span>
+              <!-- <span class="rating-info">{{ comment.rating_info }}</span> -->
+              <p class="comment-text">{{ comment.comment_text }}</p>
+              <br />
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
@@ -541,5 +553,23 @@ watch([r5, r4, r3, r2, r1], () => {
       }
     }
   }
+}
+
+#app > div > div > div.main > div > div.comments {
+  margin: 35px 40px;
+}
+.commenter-info{
+  color: #ce7111;
+  line-height: 27px;
+  font-weight: 800;
+}
+.time-info{
+    color: grey;
+    font-size: 14px;
+    line-height: 19px;
+}
+.comment-text{
+  font-size: 15px;
+  line-height: 18px;
 }
 </style>
